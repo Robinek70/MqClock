@@ -56,6 +56,17 @@ RgbColor effect_color (int x, int y)
 
 /**************************************************************************/
 
+/*void effect_fill_color (RgbColor color)
+{
+  for (int i = 0; i != PanelWidth; ++i)
+  {
+    for (int j = 0; j != PanelHeight; ++j)
+    {
+      effect_state[j][i] = color;
+    }
+  }
+}*/
+
 void effect_blank ()
 {
   for (int i = 0; i != PanelWidth; ++i)
@@ -66,6 +77,18 @@ void effect_blank ()
     }
   }
 }
+
+void effect_fill ()
+{
+  for (int i = 0; i != PanelWidth; ++i)
+  {
+    for (int j = 0; j != PanelHeight; ++j)
+    {
+      effect_state[j][i] = effect_color (i, j);
+    }
+  }
+}
+
 
 /**************************************************************************/
 
@@ -100,7 +123,10 @@ void effect_rain ()
     auto &y = effect_y[i];
     if (y < PanelHeight)
     {
-      effect_state[y][x] = effect_color (x, y);
+      //auto pixel = topo.Map (x, y);
+      //auto c = strip.GetPixelColor (pixel);
+      //if(!c.CalculateBrightness())
+        effect_state[y][x] = effect_color (x, y);
       ++y;
     }
     else
@@ -194,11 +220,13 @@ void effect_ping_graph ()
 const char *effect_names[] PROGMEM =
 {
   "None",
+  "Fill",
   "Pulse",
   "Rain",
   "Bounce",
   "Chase",
-  "Ping graph"
+  "Ping graph",
+  "Snow"
 };
 
 using EffectFunction = void (*)();
@@ -206,11 +234,13 @@ using EffectFunction = void (*)();
 const EffectFunction effect_functions[] =
 {
   effect_blank,
+  effect_fill,
   effect_pulse,
   effect_rain,
   effect_bounce,
   effect_chase,
-  effect_ping_graph
+  effect_ping_graph,
+  effect_snow
 };
 
 /**************************************************************************/

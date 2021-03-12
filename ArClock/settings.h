@@ -7,12 +7,19 @@
 #pragma once
 
 #include <sstream>
+#include <list>
 
 /**************************************************************************/
 
 using Settings = std::map<String, String>;
 
+using Sequence = std::list<String>;
+
 Settings settings;
+Sequence sequence;
+
+String qValues[] = {"-", "-", "-", "-", "-", "-"};
+ssize_t lastSelectedPreset = 0;
 
 /**************************************************************************/
 
@@ -27,25 +34,39 @@ effectColorMode=Varying
 effectDecay=0
 effectSpeed=50
 masterBrightness=32
+autoBrightness=
 messageColor=#1ab500
 messageRepeat=
 password=
+message=
 pingTarget=8.8.8.8
-primaryColor=#408080
-primaryColorMode=Constant
-primaryFont=Medium
-primaryFormat=H:M
-primaryX=6
-primaryY=0
-secondaryColor=#364ca0
-secondaryColorMode=Constant
-secondaryFont=Small
-secondaryFormat=
-secondaryX=23
-secondaryY=1
+d=5
+pC=#408080
+pCM=Constant
+pFt=Medium
+pFmt=H!:M
+pX=1
+pY=0
+pT=
+sC=#364ca0
+sCM=Constant
+sFt=Small
+sFmt=
+sX=23
+sY=1
+sT=
 ssid=
 timezone=Etc/UTC
 weatherLocation=
+mqttHost=
+useSequence=
+q1=RPSensors/out/General/4
+q2=
+q3=
+q4=
+q5=
+q6=
+sequence=pFmt=H:M|pFmt=d-m
 )"";
 
 /**************************************************************************/
@@ -63,69 +84,75 @@ const char *preset_names[] PROGMEM =
   "Perpetual",
   "Pride",
   "Ping",
-  "1990s"
+  "1990s",
+  "Sequence"
 };
 
 const char null_preset[] PROGMEM = "";
 
 const char vanilla_preset[] PROGMEM =
 R""(effect=None
-primaryColor=#505030
-primaryColorMode=Constant
-primaryFont=Medium
-primaryFormat=H:M
-primaryX=6
-primaryY=0
-secondaryFormat=
+pC=#505030
+pCM=Constant
+pFt=Medium
+pFmt=H:M
+pX=6
+pY=0
+sFmt=
+useSequence=
 )"";
 
 const char minimalist_preset[] PROGMEM =
 R""(effect=None
-primaryColor=#184640
-primaryColorMode=Varing
-primaryFont=Small
-primaryFormat=H:M
-primaryX=14
-primaryY=2
-secondaryFormat=
+pC=#184640
+pCM=Varing
+pFt=Small
+pFmt=H:M
+pX=14
+pY=2
+sFmt=
+useSequence=
 )"";
 
 const char utility_preset[] PROGMEM =
  R""(effect=None
-primaryColor=#20440f
-primaryColorMode=Constant
-primaryFont=Medium
-primaryFormat=H:M
-primaryX=0
-primaryY=0
-secondaryColor=#364ca0
-secondaryColorMode=Constant
-secondaryFont=Small
-secondaryFormat=C*
-secondaryX=23
-secondaryY=2
+pC=#20440f
+pCM=Constant
+pFt=Medium
+pFmt=H:M
+pX=0
+pY=0
+sC=#364ca0
+sCM=Constant
+sFt=Small
+sFmt=C*
+sX=23
+sY=2
+useSequence=
 )"";
 
 const char perpetual_preset[] PROGMEM =
 R""(effect=None
-primaryColor=#204284
-primaryColorMode=Plasma
-primaryFont=Small
-primaryFormat=y.m.d
-primaryX=3
-primaryY=1
-secondaryFormat=
+pC=#204284
+pCM=Plasma
+pFt=Small
+pFmt=y.m.d
+pX=3
+pY=1
+sFmt=
+useSequence=
 )"";
 
 const char pride_preset[] PROGMEM =
 R""(effect=None
-primaryColor=#82166c
-primaryColorMode=Rainbow
-primaryFont=Extra large
-primaryFormat=H:M
-primaryX=1
-primaryY=0
-secondaryFormat=
+pC=#82166c
+pCM=Rainbow
+pFt=Extra large
+pFmt=H:M
+pX=1
+pY=0
+sFmt=
+useSequence=
 )"";
 
 const char ping_preset[] PROGMEM =
@@ -135,13 +162,14 @@ effectColorMode=Constant
 effectDecay=58
 effectSpeed=500
 pingTarget=8.8.8.8
-primaryColor=#6b6b6b
-primaryColorMode=Constant
-primaryFont=Small
-primaryFormat=p
-primaryX=10
-primaryY=1
-secondaryFormat=
+pC=#6b6b6b
+pCM=Constant
+pFt=Small
+pFmt=p
+pX=10
+pY=1
+sFmt=
+useSequence=
 )"";
 
 const char nineties_preset[] PROGMEM =
@@ -150,13 +178,27 @@ effectColor=#00e000
 effectColorMode=Constant
 effectDecay=0
 effectSpeed=305
-primaryColor=#600000
-primaryColorMode=Constant
-primaryFont=7-segment
-primaryFormat=H:M
-primaryX=3
-primaryY=1
-secondaryFormat=
+pC=#600000
+pCM=Constant
+pFt=7-segment
+pFmt=H:M
+pX=3
+pY=1
+sFmt=
+useSequence=
+)"";
+
+const char sequence_preset[] PROGMEM =
+R""(effect=Pulse
+effectColor=#ffffff
+effectColorMode=Constant
+effectDecay=118
+effectSpeed=188s
+pX=0
+pY=0
+sFmt=
+useSequence=checked
+Sequence=d=3;pC=#184640;pX=0;pY=0;pCM=Plasma;pFt=Extra Large;pFmt=H!:M|pFmt=wd-m;pFt=Medium|d=0.07;pX=5|pX=10|pX=15|pX=20|pX=25
 )"";
 
 const char *presets[] PROGMEM =
@@ -169,11 +211,12 @@ const char *presets[] PROGMEM =
   pride_preset,
   ping_preset,
   nineties_preset,
+  sequence_preset
 };
 
 /**************************************************************************/
 
-void parse_settings (const char *data)
+void parse_settings (const char *data, char splitter = '\n')
 {
   /*
    * TODO: Arduino-ise this
@@ -184,10 +227,26 @@ void parse_settings (const char *data)
   {
     std::string key, value;
     std::getline (iss, key, '=');
-    std::getline (iss, value, '\n');
+    std::getline (iss, value, splitter);
     if (!key.empty ())
     {
+      if(key[0]=='v') continue;
       settings[key.c_str ()] = value.c_str ();
+    }
+  }  
+}
+
+void parse_sequence (const char *data)
+{
+  std::string string (data);
+  std::istringstream iss (string);
+  while (!iss.eof ())
+  {
+    std::string key;
+    std::getline (iss, key, '|');
+    if (!key.empty ())
+    {
+      sequence.push_back( key.c_str ());
     }
   }  
 }
@@ -252,8 +311,20 @@ void load_preset (const String &name)
     if (name == preset_names[i])
     {
       parse_settings (String (FPSTR (presets[i])).c_str ());
+      lastSelectedPreset = i;
     }
   }  
+}
+
+void load_preset (ssize_t i)
+{
+  auto it = std::begin (preset_names);
+  std::advance(it, i);
+  if(it != std::end (preset_names)) {
+      parse_settings (String (FPSTR (presets[i])).c_str ());
+  } else { i = 0; }
+
+  lastSelectedPreset = i;
 }
 
 /**************************************************************************/

@@ -8,8 +8,11 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
+#include <PubSubClient.h>
+#include <WebSocketsServer.h>
 
 #include <Pinger.h>
+#include <PinButton.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare" /* rolls eyes */
@@ -46,9 +49,12 @@ NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod> strip (PixelCount);
  */
 DNSServer dnsServer;
 ESP8266WebServer server (80);
+WebSocketsServer webSocket(81);
 IPAddress APIP (192, 168, 4, 1);
 WiFiClient client;
 Pinger pinger;
+WiFiClient wifi4mqttClient;
+PubSubClient mqttClient(wifi4mqttClient);
 
 /**************************************************************************/
 
@@ -58,12 +64,20 @@ Pinger pinger;
 int16_t year = 0;
 int8_t month = 0;
 int8_t day = 0;
+int8_t dow = 0;
 int8_t hours = 0;
 int8_t minutes = 0;
 int8_t seconds = 0;
 int16_t ping_time = 1000;
 int16_t ping_history[PanelWidth];
 float celsius = -99; /* bit nippy */
+float tempLocal = -127;
+float prevTempLocal = -127;
+float light = 20;
+bool autoBright = false;
+int current_seq = 0;
+uint32_t nextSequenceTime = 10000;
+PinButton myButton(13);
   
 /**************************************************************************/
 
@@ -79,6 +93,52 @@ float celsius = -99; /* bit nippy */
 #include "weather.h"
 #include "message.h"
 #include "wifi_logo.h"
+#include "mqtt.h"
+
+/**************************************************************************/
+
+/*
+ * Dallas
+ */
+#include <OneWire.h>
+#include <DallasTemperature.h>
+// GPIO where the DS18B20 is connected to
+const int oneWireBus = 2;   
+int numberOfDevices = 0;  
+
+uint32_t lastSendTemp;
+
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(oneWireBus);
+
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
+
+// Lighting
+int LDRpin = A0; 
+uint32_t lastSendLight;
+
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+
+    switch(type) {
+        case WStype_DISCONNECTED:
+            Serial.printf("[%u] Disconnected!\n", num);
+            break;
+        case WStype_CONNECTED: {
+            IPAddress ip = webSocket.remoteIP(num);
+            Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+
+            // send message to client
+            webSocket.sendTXT(num, "Connected");
+        }
+            break;
+        case WStype_TEXT:
+            Serial.printf("[%u] get Text: %s\n", num, payload);
+
+            break;
+    }
+
+}
 
 /**************************************************************************/
 
@@ -113,7 +173,7 @@ void setup ()
   WiFi.persistent (false);
   if (settings.at (F("ssid")) != "")
   {
-    Serial.print (F("Connecting to "));
+    Serial.print (F("\nConnecting to "));
     Serial.print (settings.at (F("ssid")));
     WiFi.begin (settings.at (F("ssid")), settings.at (F("password")));
   
@@ -138,9 +198,9 @@ void setup ()
     Serial.println (WiFi.localIP ());
     
     /*
-     * Start mDNS responder, so we can be found as http://arclock.local
+     * Start mDNS responder, so we can be found as http://mqclock.local
      */
-    MDNS.begin (F("arclock"));
+    MDNS.begin (F("mqclock"));
 
     /*
      * Setup pinger
@@ -175,7 +235,7 @@ void setup ()
       wifi_logo (RgbColor (N > 0x180 ? N - 0x180 : 0, N > 0x100 ? 0x80 : (N > 0x80 ? N - 0x80 : 0), N > 0x180 ? N - 0x180 : 0));
       delay (15);
     }
-    String message (F("Visit http://arclock.local or http://"));
+    String message (F("Visit http://"));
     message += WiFi.localIP ().toString ();
     message += F(" to configure");
     show_message (message);
@@ -187,25 +247,28 @@ void setup ()
      */
     WiFi.mode (WIFI_AP);
     WiFi.softAPConfig (APIP, APIP, IPAddress (255, 255, 255, 0));
-    WiFi.softAP (F("ArClock"));
+    WiFi.softAP (F("MqClock"));
     dnsServer.start (53, "*", APIP);
     for (int N = 0x200; N >= 0; N -= 3)
     {
       wifi_logo (RgbColor (N > 0x180 ? N - 0x180 : 0, N > 0x180 ? N - 0x180 : 0, N > 0x100 ? 0x80 : (N > 0x80 ? N - 0x80 : 0)));
       delay (15);
     }
-    show_message (F("Connect to ArClock WiFi network to setup"));
+    show_message (F("Connect to MqClock WiFi network to setup"));
   }
   
   /*
    * Apply other settings
    */
-  update ();
+  apply ();
 
   /*
    * Start the webserver
    */
   server.on (F("/"), handle_root);
+  server.on (F("/mqtt"), handle_mqtt);
+  server.on (F("/part"), handle_part);
+  server.on (F("/save"), handle_save);
   server.on (F("/update"), handle_update);
   server.on (F("/change"), handle_change);
   server.on (F("/timezones"), handle_timezones);
@@ -217,17 +280,79 @@ void setup ()
   server.on (F("/load_preset"), handle_load_preset);
   server.onNotFound (handle_root);
   server.begin ();
+
+  webSocket.begin();                          // start the websocket server
+  webSocket.onEvent(webSocketEvent);          // if there's an incomming websocket message, go to function 'webSocketEvent'
+  Serial.println("WebSocket server started.");
+
+  sensors.begin();
+  numberOfDevices = sensors.getDeviceCount();
+  
+  // locate devices on the bus
+  Serial.print(F("Locating DS devices... Found: "));
+  Serial.print(numberOfDevices, DEC);
+  Serial.println(F(" device(s)."));
+  Serial.print(F("Chip ID: "));
+  Serial.println (String(ESP.getChipId(), HEX));
+
+  auto mqtt_server = settings.at (F("mqttHost")).c_str();
+  Serial.print(F("MQTT server: "));
+  Serial.print (mqtt_server);
+  Serial.println (F(":1883"));
+ 
+  setMqttClientName();
+  mqttClient.setServer(mqtt_server, 1883);
+  mqttClient.setCallback(callback);
+
+  // d=3;pX=0;pY=0;pCM=Plasma;pFt=Extra Large;pFmt=H!:M|pFmt=wd-m;pFt=Medium|pFmt=v2*xC;sFmt=S;sFt=Small;sX=25|pFmt=V4%5.1f*xC;sFmt=;pFmt=V1%4.0fxw
+  //parse_sequence(command);
+  //sequence.clear();
+  //current_seq = 0;
 }
 
 /**************************************************************************/
-
+float lightTmp = 300;
 void loop ()
 {
+  myButton.update();
+  if (myButton.isSingleClick()) {
+    Serial.println("CLICK");
+    load_preset(lastSelectedPreset + 1);
+  } else if (myButton.isDoubleClick()) {
+    Serial.println("Double CLICK");
+  } else if (myButton.isLongClick()) {
+    Serial.println("Long CLICK");
+  }
+  
+  if (!mqttClient.connected()) {
+    reconnect();
+  } else {
+    mqttClient.loop();
+  }
+
   /*
    * Banner messages take priority
    */
   if (!message ())
   {
+     if((settings.at (F("useSequence"))=="checked") && millis() > nextSequenceTime) {
+       auto it = sequence.begin();
+       std::advance(it, current_seq);
+       Serial.print(*it);
+       Serial.print(',');
+       Serial.print(current_seq);
+       Serial.print(',');
+       Serial.println(sequence.size());
+
+       parse_settings((*it).c_str(), ';');
+       current_seq++;
+       if(current_seq >= sequence.size()) {
+          current_seq = 0;
+       }
+       nextSequenceTime = millis() + settings.at (F("d")).toFloat()*1000;
+     }
+
+    
     /*
      * Update the effect
      */
@@ -246,6 +371,7 @@ void loop ()
     year = 1900 + tm->tm_year;
     month = tm->tm_mon + 1;
     day = tm->tm_mday;
+    dow = tm->tm_wday;
     hours = tm->tm_hour;
     minutes = tm->tm_min;
     seconds = tm->tm_sec;
@@ -255,8 +381,8 @@ void loop ()
      */
     if (now > 5)
     {
-      clock (F("primary"));
-      clock (F("secondary"));
+      clock (F("p"));
+      clock (F("s"));
     }  
   }
    
@@ -268,9 +394,52 @@ void loop ()
   /*
    * Handle web server events
    */
+  webSocket.loop();
   server.handleClient ();
   MDNS.update ();
   dnsServer.processNextRequest ();
+
+  // Dallas
+  if(numberOfDevices>0) {
+    uint32_t delta = millis() - lastSendTemp;
+    if( delta > 30000) {
+      sensors.requestTemperatures(); 
+      if( delta > 31000) {
+        tempLocal = round(10*sensors.getTempCByIndex(0))/10.;
+        if(tempLocal == -127.00) {
+          Serial.println("Failed to read from DS18B20 sensor");          
+        } else {
+          Serial.print("Temperature Celsius: ");
+          Serial.println(tempLocal);
+          if (prevTempLocal != tempLocal) {
+              static char tempTemp[7];
+              dtostrf(tempLocal, 6, 1, tempTemp);
+              mqttClient.publish("mqclock/temp", tempTemp);
+              prevTempLocal = tempLocal;
+          }
+        
+        }
+        lastSendTemp = millis();
+      }
+    }
+  }
+
+  // Lighting
+  uint32_t delta = millis() - lastSendLight;
+  int l = analogRead(LDRpin);
+  lightTmp = (lightTmp*9 + l)/(9 + 1);
+  if(delta>1000) {
+    light = lightTmp;
+    lastSendLight = millis();
+
+    if(autoBright) {
+        float x = max(400.f, light);
+        x = min(x,1000.f);
+        int b = map(x, 400.f, 1000.f, 4, 30);
+        strip.SetBrightness(b);
+    }
+  }
+
 }
 
 /**************************************************************************/

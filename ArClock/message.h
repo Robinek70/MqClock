@@ -33,8 +33,12 @@ bool message ()
       auto interval = settings[F("messageRepeat")].toInt ();
       if (interval > 0)
       {
+        Serial.print(F("Next Repeat: "));
+        Serial.println(settings[F("message")]);
+        
         next_repeat = millis () + (interval * 1000);
         show_message (settings[F("message")]);
+        return true;
       }
     }
     
