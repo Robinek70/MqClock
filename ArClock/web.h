@@ -42,6 +42,7 @@ String make_options (const List &list, const String &current)
 /**************************************************************************/
 
 std::size_t currentSequenceHash = 0;
+std::size_t currentAnimeHash = 0;
 
 void apply () 
 {
@@ -69,9 +70,17 @@ void apply ()
     sequence.clear();
     current_seq = 0;
     parse_sequence(newSequence);
+    currentSequenceHash = newHash;
+  }  
+
+  String a = settings.at (F("a"));
+  const char * newAnime = a.c_str ();
+  newHash = std::hash<std::string>{}(newAnime);
+  if(currentAnimeHash != newHash) {
+    applyAnime(a);
+    currentAnimeHash = newHash;
   }
-  
-  currentSequenceHash = newHash;
+
   /*
    * Configure NTP for the correct timezone
    * 
@@ -118,6 +127,7 @@ void replaceVariables(String& result) {
   for (const auto &setting : settings)
   { 
     result.replace ("{{" + setting.first + "}}", setting.second);
+    result.replace ("{{checked-" + setting.first + "}}", (setting.second=="1")?"checked":"");
   }
 
   /*
@@ -156,7 +166,7 @@ void handle_root ()
    * bigger you'll be in trouble though...
    */
   String result;
-  result.reserve (10000); 
+  result.reserve (9000); 
   result += FPSTR (page_template);
 
   replaceVariables(result);
@@ -174,7 +184,7 @@ void handle_root ()
 void handle_mqtt ()
 {
   String result;
-  result.reserve (10000);
+  result.reserve (8000);
   result += FPSTR (page_mqtt_template);
 
   replaceVariables(result);
@@ -263,21 +273,37 @@ void handle_reboot ()
 /*
  * XMLHttpRequest to get a list of timezones
  */
-void handle_timezones () 
+void handle_timezones()
 {
-  String result = "[";
-  for (auto it = std::begin (timezone_names); it != std::end (timezone_names); ++it)
+  int pageSize = 100;
+  int page = server.arg(F("p")).toInt();
+  int count = 0;
+  String result;
+  result.reserve(3000);
+  result += "[";
+  int skip = page * pageSize;
+  auto it = std::begin(timezone_names);
+  //std::advance(it, skip);
+  for (; it != std::end(timezone_names); ++it)
   {
+    ++count;
+    if (count < skip)
+      continue;
+
     result += '"';
     result += *it;
     result += '"';
-    if (std::next (it) != std::end (timezone_names))
+
+    if (count > skip + pageSize - 1)
+      break;
+    if (std::next(it) != std::end(timezone_names))
     {
       result += ",\n";
     }
   }
+
   result += "]";
-  server.send (200, F("application/json"), result);
+  server.send(200, F("application/json"), result);
 }
 
 /**************************************************************************/

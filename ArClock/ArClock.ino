@@ -335,7 +335,7 @@ void loop ()
    */
   if (!message ())
   {
-     if((settings.at (F("useSequence"))=="checked") && millis() > nextSequenceTime) {
+     if((settings.at (F("useSequence")).toInt()) && millis() > nextSequenceTime) {
        auto it = sequence.begin();
        std::advance(it, current_seq);
        Serial.print(*it);
@@ -344,7 +344,13 @@ void loop ()
        Serial.print(',');
        Serial.println(sequence.size());
 
+       if(settings.at (F("aSeq")).length()>0) {
+          settings["a"] = settings.at (F("aSeq"));
+          currentAnimeHash = 0; // force apply new sequence for every step
+       }
+
        parse_settings((*it).c_str(), ';');
+       apply();
        current_seq++;
        if(current_seq >= sequence.size()) {
           current_seq = 0;
@@ -352,7 +358,7 @@ void loop ()
        nextSequenceTime = millis() + settings.at (F("d")).toFloat()*1000;
      }
 
-    
+    anime();
     /*
      * Update the effect
      */

@@ -60,6 +60,10 @@ const char page_mqtt_template[] PROGMEM = R""(<!DOCTYPE html>
             <input type="text" name="d" value="{{d}}" onChange="updateSingle(this)">
             </div>
             <div class="pure-control-group">
+            <label for="aSeq">Default animations between steps</label>
+            <input type="text" name="aSeq" value="{{aSeq}}" onChange="updateSingle(this)">
+            </div>
+            <div class="pure-control-group">
             <label for="sequence">Sequence</label>
             <input type="text" name="sequence" value="{{sequence}}" style="width: 80%" onChange="updateSingle(this)">
             </div>

@@ -66,7 +66,10 @@ q3=
 q4=
 q5=
 q6=
-sequence=pFmt=H:M|pFmt=d-m
+sequence=a=y0:8;pFmt=H:M|a=x0:-30;pFmt=d-m
+a=
+aSeq=
+useAnime=1
 )"";
 
 /**************************************************************************/
@@ -100,6 +103,7 @@ pX=6
 pY=0
 sFmt=
 useSequence=
+useAnime=0
 )"";
 
 const char minimalist_preset[] PROGMEM =
@@ -112,6 +116,7 @@ pX=14
 pY=2
 sFmt=
 useSequence=
+useAnime=0
 )"";
 
 const char utility_preset[] PROGMEM =
@@ -129,6 +134,7 @@ sFmt=C*
 sX=23
 sY=2
 useSequence=
+useAnime=0
 )"";
 
 const char perpetual_preset[] PROGMEM =
@@ -141,6 +147,7 @@ pX=3
 pY=1
 sFmt=
 useSequence=
+useAnime=0
 )"";
 
 const char pride_preset[] PROGMEM =
@@ -153,6 +160,7 @@ pX=1
 pY=0
 sFmt=
 useSequence=
+useAnime=0
 )"";
 
 const char ping_preset[] PROGMEM =
@@ -170,6 +178,7 @@ pX=10
 pY=1
 sFmt=
 useSequence=
+useAnime=0
 )"";
 
 const char nineties_preset[] PROGMEM =
@@ -186,6 +195,7 @@ pX=3
 pY=1
 sFmt=
 useSequence=
+useAnime=0
 )"";
 
 const char sequence_preset[] PROGMEM =
@@ -197,8 +207,9 @@ effectSpeed=188s
 pX=0
 pY=0
 sFmt=
-useSequence=checked
+useSequence=1
 Sequence=d=3;pC=#184640;pX=0;pY=0;pCM=Plasma;pFt=Extra Large;pFmt=H!:M|pFmt=wd-m;pFt=Medium|d=0.07;pX=5|pX=10|pX=15|pX=20|pX=25
+useAnime=1
 )"";
 
 const char *presets[] PROGMEM =

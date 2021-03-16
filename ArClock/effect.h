@@ -6,6 +6,8 @@
  
 #pragma once
 
+#include <iostream>
+#include <sstream>
 #include "settings.h"
 #include "color.h"
 
@@ -291,8 +293,75 @@ void effect (const String &name)
       }
     };    
     effect_show ();
-    effect_decay (1.0 - (1.0 / (202 - settings.at ("effectDecay").toFloat ())));
+    effect_decay (1.0 - (1.0 / (202 - settings.at (F("effectDecay")).toFloat ())));
   }
+}
+
+int ddx = 0;
+int ddy = 0;
+
+void anime_pos()
+{
+  int x = settings.at("pX").toInt();
+  int y = settings.at("pY").toInt();
+  int dx, dy;
+  if (x == ddx)
+    dx = 0;
+  else if (ddx > x)
+    dx = 1;
+  else
+    dx = -1;
+  if (y == ddy)
+    dy = 0;
+  else if (ddy > y)
+    dy = 1;
+  else
+    dy = -1;
+
+  if (dx != 0)
+    settings["pX"] = x + dx;
+  if (dy != 0)
+    settings["pY"] = y + dy;
+}
+
+void applyAnime(const String &a) {
+  int pos = 0;
+
+  if ((a.length() > 0) && settings.at (F("useAnime")).toInt())
+  {
+    std::string aa(a.c_str());
+    std::istringstream iss (aa);
+    while (!iss.eof ())
+    {
+      std::string item;
+      std::getline (iss, item, ',');
+      char dir = item[0];
+      int value = atoi(item.substr(1).c_str());
+
+      if (dir == 'x') {
+        ddx = value;
+      }
+      if (dir == 'y') {
+        ddy = value;
+      }
+
+      std::size_t pos = item.find(":");
+      if(pos != -1) {
+          value = atoi(item.substr(pos+1).c_str());
+          if(dir == 'x')
+            settings["pX"] = value;
+          if(dir == 'y')
+            settings["pY"] = value;
+      }
+    }
+  }
+}
+
+void anime()
+{
+    if(settings.at (F("useAnime")).toInt()) {
+      anime_pos();
+    }
 }
 
 /**************************************************************************/

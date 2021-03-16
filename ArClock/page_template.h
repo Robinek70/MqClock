@@ -133,7 +133,7 @@ const char script_js[] PROGMEM = R""(
    * Fill the timezone selector - has to be done dynamically
    * due to memory constraints
    */
-  function populate_timezones ()
+  function populate_timezones (page)
   {
     var request = new XMLHttpRequest ();
     request.onreadystatechange = function() 
@@ -154,11 +154,16 @@ const char script_js[] PROGMEM = R""(
         }
 
         var timezones = JSON.parse (this.responseText);
+        if(timezones.length==0)
+          return;
+
         timezones.forEach (add_selector);
+
+        populate_timezones(page+1);
       }
     };
 
-    request.open ("GET", "/timezones", true);
+    request.open ("GET", "/timezones?p="+page, true);
     request.send ();
   }
 
@@ -213,7 +218,7 @@ function toggleNetwork(id) {
   }
 
 function init() {
-   populate_timezones();
+   populate_timezones(0);
 
    (() => {
         const includes = document.getElementsByTagName('include');
@@ -272,7 +277,7 @@ const char page_template[] PROGMEM = R""(<!DOCTYPE html>
         </form>
       </div>
       <div class="pure-u-1 pure-u-md-1-3"> 
-        <a href="/mqtt">MQTT sensors</a>
+        <a href="/mqtt">MQTT sensors/sequence</a>
       </div>
     </div>
     <form class="pure-form pure-form-aligned" onSubmit="event.preventDefault();">
@@ -356,7 +361,7 @@ L - internal lighting sensor
 
           <div class="pure-control-group">
             <label for="sC">Color</label>
-            <select name="sCM" onInput="updateSingle(this) onChange="updateSingle(this)">{{secondary_color_mode_choices}}</select>
+            <select name="sCM" onInput="updateSingle(this)" onChange="updateSingle(this)">{{secondary_color_mode_choices}}</select>
             <input type="color" class="pure-button" style="height:2em; padding:0.2em;" name="sC" value="{{sC}}" onChange="updateSingle(this)">
           </div>
       
@@ -455,8 +460,13 @@ const char page_template_master[] PROGMEM = R""(
           
           <div class="pure-control-group">
             <label for="useSequence">Use sequence</label>
-            <input id="useSequence" type="checkbox" name="useSequence" {{useSequence}} onChange="updateSingle(this)" value="checked"/>
-            <input id="useSequenceHidden" type="hidden" value="unchecked" name="useSequence"/>
+            <input id="useSequence" type="checkbox" name="useSequence" {{checked-useSequence}} onChange="updateSingle(this)" value="1"/>
+            <input id="useSequenceHidden" type="hidden" value="0" name="useSequence"/>
+          </div>
+          <div class="pure-control-group">
+            <label for="useAnime">Use animations</label>
+            <input id="useAnime" type="checkbox" name="useAnime" {{checked-useAnime}} onChange="updateSingle(this)" value="1"/>
+            <input id="useAnimeHidden" type="hidden" value="0" name="useAnime"/>
           </div>
       </fieldset>
 )"";

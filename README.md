@@ -13,5 +13,7 @@ Expended functionality of firmware.
 - Autobrightness if connected sensor  
 - Define any sequence to show in order  
 
+![stand](https://github.com/Robinek70/MqClock/raw/main/anime.gif)  
+
 based on great project ArClock
 See https://www.instructables.com/ArClock-a-Smart-Display-Wrapped-in-Real-Wood/
