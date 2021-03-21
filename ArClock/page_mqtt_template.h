@@ -61,11 +61,12 @@ const char page_mqtt_template[] PROGMEM = R""(<!DOCTYPE html>
             </div>
             <div class="pure-control-group">
             <label for="aSeq">Default animations between steps</label>
-            <input type="text" name="aSeq" value="{{aSeq}}" onChange="updateSingle(this)">
+            <input type="text" name="aSeq" value="{{aSeq}}" onChange="updateSingle(this)"><span>[x|y|d]{to|delay}:{from}[,]</span>
             </div>
             <div class="pure-control-group">
             <label for="sequence">Sequence</label>
             <input type="text" name="sequence" value="{{sequence}}" style="width: 80%" onChange="updateSingle(this)">
+            <div>; - settings separator, | - sequence separator, ex. d=5;pFmt=i2H!:M|a=X0:-32;pFmt=S i1</div>
             </div>
       </fieldset>
       <a class="pure-button" style="background: rgb(255, 120, 30);" onClick="save();">Save</a>

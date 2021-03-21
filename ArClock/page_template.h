@@ -315,6 +315,7 @@ v[1-6] - mqtt sensor
 V[1-6] as v1 with format ex. V2%4.1f
 T - internal DS sensor
 L - internal lighting sensor
+i[0-25] - display icon
 ! = flash ex. !:
 : . * - and space" name="pFmt" value="{{pFmt}}" onChange="updateSingle(this)">
           </div>

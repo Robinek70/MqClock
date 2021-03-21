@@ -418,6 +418,23 @@ void clock (String item)
           printText(String(format), x, y, color); 
         }
         break;
+      case 'i':
+        {
+          auto ii = 0;
+          char fmt[10];
+          while (++it != ff.end() && *it >= '0' && *it <= '9')
+          {
+            fmt[ii++] = *it;
+          };
+          fmt[ii] = '\0';
+          if (ii > 0)
+          {
+            int ic = atoi(fmt);
+            print_icon(x, y, ic, color);
+          }
+          --it;
+        }
+        break;
       case 'V':
       case 'v':
         if(++it != ff.end()) {

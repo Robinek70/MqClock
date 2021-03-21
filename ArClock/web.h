@@ -166,7 +166,7 @@ void handle_root ()
    * bigger you'll be in trouble though...
    */
   String result;
-  result.reserve (9000); 
+  result.reserve (12000); 
   result += FPSTR (page_template);
 
   replaceVariables(result);

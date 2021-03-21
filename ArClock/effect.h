@@ -299,6 +299,8 @@ void effect (const String &name)
 
 int ddx = 0;
 int ddy = 0;
+int adelay = 0;
+
 
 void anime_pos()
 {
@@ -344,6 +346,9 @@ void applyAnime(const String &a) {
       if (dir == 'y') {
         ddy = value;
       }
+      if (dir == 'd') {
+        adelay = value;
+      }
 
       std::size_t pos = item.find(":");
       if(pos != -1) {
@@ -357,10 +362,18 @@ void applyAnime(const String &a) {
   }
 }
 
+unsigned long last_anime_time = 0;
+
 void anime()
 {
     if(settings.at (F("useAnime")).toInt()) {
+      
+      auto now = millis (); 
+      if(last_anime_time + adelay > now) 
+        return;
+
       anime_pos();
+      last_anime_time = now;
     }
 }
 

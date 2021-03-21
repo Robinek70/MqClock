@@ -88,7 +88,8 @@ const char *preset_names[] PROGMEM =
   "Pride",
   "Ping",
   "1990s",
-  "Sequence"
+  "Sequence",
+  "Icons"
 };
 
 const char null_preset[] PROGMEM = "";
@@ -208,7 +209,21 @@ pX=0
 pY=0
 sFmt=
 useSequence=1
-Sequence=d=3;pC=#184640;pX=0;pY=0;pCM=Plasma;pFt=Extra Large;pFmt=H!:M|pFmt=wd-m;pFt=Medium|d=0.07;pX=5|pX=10|pX=15|pX=20|pX=25
+Sequence=d=5;pC=#184640;pX=0;pY=0;pCM=Plasma;pFt=Extra Large;pFmt=H!:M|pFmt=wd-m;pFt=Medium|a=x32;d=2|pFmt=i6i10i9 i11;d=6
+useAnime=1
+)"";
+
+const char icons_preset[] PROGMEM =
+R""(effect=Pulse
+effectColor=#ffffff
+effectColorMode=Constant
+effectDecay=118
+effectSpeed=188s
+pX=0
+pY=0
+sFmt=
+useSequence=1
+sequence=a=x0:-210,d50;d=15;pFt=Medium;pFmt=Hi4 M    i0i1i2i4i5i6i7i8i9i10i11i12i13i14i15i16i17i18i19i20i21i22i23i24i26
 useAnime=1
 )"";
 
@@ -222,7 +237,8 @@ const char *presets[] PROGMEM =
   pride_preset,
   ping_preset,
   nineties_preset,
-  sequence_preset
+  sequence_preset,
+  icons_preset
 };
 
 /**************************************************************************/

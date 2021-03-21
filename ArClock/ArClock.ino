@@ -86,6 +86,7 @@ PinButton myButton(13);
  */
 #include "text_font.h"
 #include "timezones.h"
+#include "icons.h"
 #include "web.h"
 #include "clock.h"
 #include "effect.h"
