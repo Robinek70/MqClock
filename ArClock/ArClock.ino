@@ -9,7 +9,7 @@
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <PubSubClient.h>
-#include <WebSocketsServer.h>
+//#include <WebSocketsServer.h>
 
 #include <Pinger.h>
 #include <PinButton.h>
@@ -49,7 +49,7 @@ NeoPixelBrightnessBus<NeoGrbFeature, Neo800KbpsMethod> strip (PixelCount);
  */
 DNSServer dnsServer;
 ESP8266WebServer server (80);
-WebSocketsServer webSocket(81);
+//WebSocketsServer webSocket(81);
 IPAddress APIP (192, 168, 4, 1);
 WiFiClient client;
 Pinger pinger;
@@ -87,6 +87,7 @@ PinButton myButton(13);
 #include "text_font.h"
 #include "timezones.h"
 #include "icons.h"
+#include "image.h"
 #include "web.h"
 #include "clock.h"
 #include "effect.h"
@@ -119,7 +120,7 @@ DallasTemperature sensors(&oneWire);
 int LDRpin = A0; 
 uint32_t lastSendLight;
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+/*void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
 
     switch(type) {
         case WStype_DISCONNECTED:
@@ -139,7 +140,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
             break;
     }
 
-}
+}*/
 
 /**************************************************************************/
 
@@ -279,12 +280,13 @@ void setup ()
   server.on (F("/script.js"), [] { server.send (200, "text/js", script_js); });
   server.on (F("/show"), handle_show);
   server.on (F("/load_preset"), handle_load_preset);
+  server.on (F("/icon"), generate_image);
   server.onNotFound (handle_root);
   server.begin ();
 
-  webSocket.begin();                          // start the websocket server
-  webSocket.onEvent(webSocketEvent);          // if there's an incomming websocket message, go to function 'webSocketEvent'
-  Serial.println("WebSocket server started.");
+  //webSocket.begin();                          // start the websocket server
+  //webSocket.onEvent(webSocketEvent);          // if there's an incomming websocket message, go to function 'webSocketEvent'
+  //Serial.println("WebSocket server started.");
 
   sensors.begin();
   numberOfDevices = sensors.getDeviceCount();
@@ -401,7 +403,7 @@ void loop ()
   /*
    * Handle web server events
    */
-  webSocket.loop();
+  //webSocket.loop();
   server.handleClient ();
   MDNS.update ();
   dnsServer.processNextRequest ();

@@ -27,30 +27,30 @@ const char page_mqtt_template[] PROGMEM = R""(<!DOCTYPE html>
     <script src="/script.js"></script>
     
   </head>
-  <body style="padding:0.8em; font-family: 'Montserrat', sans-serif;">
+  <body onload="load_content()" style="padding:0.8em; font-family: 'Montserrat', sans-serif;">
   
-    <h1><center>Sensor MqClock - MQTT/Sequence</center></h1>
+    <h1><center>Sensor MqClock - MQTT/Sequence/Icons</center></h1>
     <form id="form_sens" class="pure-form pure-form-aligned">
       <fieldset>
           <legend>Sensor topics</legend>
             <div class="pure-control-group">
             <label for="q1">q1</label>
-            <input type="text" name="q1" value="{{q1}}" onChange="updateSingle(this)">{{v1}}
+            <input type="text" name="q1" value="{{q1}}" onChange="updateSingle(this)"> {{v1}}
             <div class="pure-control-group">
             <label for="q2">q2</label>
-            <input type="text" name="q2" value="{{q2}}" onChange="updateSingle(this)">{{v2}}
+            <input type="text" name="q2" value="{{q2}}" onChange="updateSingle(this)"> {{v2}}
             <div class="pure-control-group">
             <label for="q3">q3</label>
-            <input type="text" name="q3" value="{{q3}}" onChange="updateSingle(this)">{{v3}}
+            <input type="text" name="q3" value="{{q3}}" onChange="updateSingle(this)"> {{v3}}
             <div class="pure-control-group">
             <label for="q4">q4</label>
-            <input type="text" name="q4" value="{{q4}}" onChange="updateSingle(this)">{{v4}}
+            <input type="text" name="q4" value="{{q4}}" onChange="updateSingle(this)"> {{v4}}
             <div class="pure-control-group">
             <label for="q5">q5</label>
-            <input type="text" name="q5" value="{{q5}}" onChange="updateSingle(this)">{{v5}}
+            <input type="text" name="q5" value="{{q5}}" onChange="updateSingle(this)"> {{v5}}
             <div class="pure-control-group">
             <label for="q6">q6</label>
-            <input type="text" name="q6" value="{{q6}}" onChange="updateSingle(this)">{{v6}}
+            <input type="text" name="q6" value="{{q6}}" onChange="updateSingle(this)"> {{v6}}
           </div>
       </fieldset>
       <fieldset>
@@ -61,16 +61,26 @@ const char page_mqtt_template[] PROGMEM = R""(<!DOCTYPE html>
             </div>
             <div class="pure-control-group">
             <label for="aSeq">Default animations between steps</label>
-            <input type="text" name="aSeq" value="{{aSeq}}" onChange="updateSingle(this)"><span>[x|y|d]{to|delay}:{from}[,]</span>
+            <input type="text" name="aSeq" value="{{aSeq}}" onChange="updateSingle(this)" title="[x|y|d]{to|delay}:{from}[,]">
             </div>
             <div class="pure-control-group">
             <label for="sequence">Sequence</label>
-            <input type="text" name="sequence" value="{{sequence}}" style="width: 80%" onChange="updateSingle(this)">
-            <div>; - settings separator, | - sequence separator, ex. d=5;pFmt=i2H!:M|a=X0:-32;pFmt=S i1</div>
-            </div>
+            <input type="text" name="sequence" value="{{sequence}}" style="width: 80%" onChange="updateSingle(this)" title=
+"
+; - settings separator,
+| - sequence separator,
+ex. d=5;pFmt=i2H!:M|a=X0:-32;pFmt=S i1">
+            </div>            
       </fieldset>
+      <fieldset>
+          <legend>Icons</legend>
+          <div class="pure-control-group icons">
+            <include src="/part?p=icons">Loading...</include>
+          </div>
+      </fieldset>  
       <a class="pure-button" style="background: rgb(255, 120, 30);" onClick="save();">Save</a>
     </form>
+    </br>
     <a href="/">Main page</a>
   </body>
 </html>
@@ -78,3 +88,21 @@ const char page_mqtt_template[] PROGMEM = R""(<!DOCTYPE html>
 
 /**************************************************************************/
 ;
+
+
+
+const char page_template_icons[] PROGMEM = R""(
+  <style>
+    .icons img {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+    }
+    .icons span {
+      display: inline-block;
+      text-align: center;
+    }
+  </style>
+  {{icons_list}}
+  
+  )"";

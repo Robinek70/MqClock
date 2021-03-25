@@ -39,6 +39,24 @@ String make_options (const List &list, const String &current)
   return choices;
 }
 
+template<typename List>
+String make_icons (const List &list)
+{
+  String choices;
+  int i = 0;
+  for (const auto &item : list)
+  {
+    choices += F(R""(<span><img src="/icon?i=)"");
+    choices += i;
+    choices += '"';
+    choices += F(R""( /></br>)"");
+    choices += i;
+    choices += F(R""(</span>)"");
+    i++;
+  }
+  return choices;
+}
+
 /**************************************************************************/
 
 std::size_t currentSequenceHash = 0;
@@ -166,7 +184,7 @@ void handle_root ()
    * bigger you'll be in trouble though...
    */
   String result;
-  result.reserve (12000); 
+  result.reserve (11000); 
   result += FPSTR (page_template);
 
   replaceVariables(result);
@@ -221,8 +239,17 @@ void handle_change ()
 
 void handle_save () 
 {
+  auto file = server.arg ("file");
+
+  if(file.length() > 0) {
+     save_settings (file);
+  }
+  else
+  {
+    save_settings ();
+  }
+
   server.send (200);
-  save_settings ();
 }
 
 /**************************************************************************/
@@ -353,6 +380,13 @@ void handle_part ()
   {
     result += FPSTR (page_template_message);
     Serial.println ("page_template_message");
+  }
+   else if(part == "icons")
+  {
+    result += FPSTR (page_template_icons);
+    Serial.println ("page_template_icons");
+    
+    result.replace (F("{{icons_list}}"), make_icons (icons));
   }
 
   replaceVariables(result);

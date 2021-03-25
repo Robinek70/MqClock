@@ -91,10 +91,10 @@ const char script_js[] PROGMEM = R""(
     request.send (new FormData (form));
   }
 
-  function save ()  
+  function save (file = '')  
   {
     var request = new XMLHttpRequest ();
-    request.open ("POST", "/save", true);
+    request.open ("POST", "/save?file="+file, true);
     request.send ('');
   }
 
@@ -182,7 +182,7 @@ const char script_js[] PROGMEM = R""(
     return false;
   }
 
-  var connection = new WebSocket('ws://' + location.hostname + ':81/', ['arduino']);
+/*  var connection = new WebSocket('ws://' + location.hostname + ':81/', ['arduino']);
 connection.onopen = function () {
   connection.send('Connect ' + new Date());
 };
@@ -194,7 +194,7 @@ connection.onmessage = function (e) {
 };
 connection.onclose = function () {
   console.log('WebSocket connection closed');
-};
+};*/
 
   function hasClass(ele,cls) {
     return !!ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
@@ -217,10 +217,8 @@ function toggleNetwork(id) {
     if(hidden) removeClass(net, "hide"); else addClass(net, "hide");
   }
 
-function init() {
-   populate_timezones(0);
-
-   (() => {
+function load_content() {
+  (() => {
         const includes = document.getElementsByTagName('include');
         [].forEach.call(includes, i => {
             let filePath = i.getAttribute('src');
@@ -232,6 +230,11 @@ function init() {
             });
         });
     })();
+}
+
+function init() {
+   populate_timezones(0);
+   load_content();
 }
 )"";
 
@@ -276,8 +279,12 @@ const char page_template[] PROGMEM = R""(<!DOCTYPE html>
         </fieldset>
         </form>
       </div>
-      <div class="pure-u-1 pure-u-md-1-3"> 
-        <a href="/mqtt">MQTT sensors/sequence</a>
+      <div class="pure-u-1 pure-u-md-1-3">
+      <form>
+      <legend>
+        <a href="/mqtt">MQTT sensors/sequence/icons</a>
+      </legend>
+      </form>
       </div>
     </div>
     <form class="pure-form pure-form-aligned" onSubmit="event.preventDefault();">
@@ -386,6 +393,8 @@ i[0-25] - display icon
       <include src="/part?p=message">Loading...</include>
       
       <a class="pure-button" style="background: rgb(255, 120, 30);" onClick="save();">Save</a>
+      <a class="pure-button" style="background: rgb(255, 120, 30);" onClick="save('User1');">As User1</a>
+      <a class="pure-button" style="background: rgb(255, 120, 30);" onClick="save('User2');">As User2</a>
     </form>
   </body>
 </html>

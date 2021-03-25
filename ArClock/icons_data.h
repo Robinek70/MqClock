@@ -1,3 +1,9 @@
+/*
+ * MqClock
+ * 
+ * (c) Robert Pelczarski 2021
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -14,6 +20,7 @@ struct defIcon {
 #include "icon-data-2.h"
 #include "icon-data-3.h"
 #include "icon-data-4.h"
+#include "icon-data-5.h"
 
 
 

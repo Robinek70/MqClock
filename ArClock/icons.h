@@ -1,3 +1,9 @@
+/*
+ * MqClock
+ * 
+ * (c) Robert Pelczarski 2021
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -30,7 +36,16 @@ const defIcon icons[] = {
     iVirusData,
     iCaffeData,
     iBeerData,
-    iCalendarData
+    iCalendarData,
+    ihomeData,
+    iSunCloudyAnimData,
+    iMoonData,
+    iMoonCloudyData,
+    iRainData,
+    iSnowData,
+    iSunData,
+    iBulbOffData,
+    iBulbOnData
 };
 
 int frame = 0;

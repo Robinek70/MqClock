@@ -89,7 +89,9 @@ const char *preset_names[] PROGMEM =
   "Ping",
   "1990s",
   "Sequence",
-  "Icons"
+  "Icons",
+  "User1",
+  "User2"
 };
 
 const char null_preset[] PROGMEM = "";
@@ -209,7 +211,7 @@ pX=0
 pY=0
 sFmt=
 useSequence=1
-Sequence=d=5;pC=#184640;pX=0;pY=0;pCM=Plasma;pFt=Extra Large;pFmt=H!:M|pFmt=wd-m;pFt=Medium|a=x32;d=2|pFmt=i6i10i9 i11;d=6
+sequence=d=5;pC=#184640;pX=0;pY=0;pCM=Plasma;pFt=Extra Large;pFmt=H!:M|pFmt=wd-m;pFt=Medium|a=x32;d=2|pFmt=i6i10i9 i11;d=6
 useAnime=1
 )"";
 
@@ -223,7 +225,7 @@ pX=0
 pY=0
 sFmt=
 useSequence=1
-sequence=a=x0:-210,d50;d=15;pFt=Medium;pFmt=Hi4 M    i0i1i2i4i5i6i7i8i9i10i11i12i13i14i15i16i17i18i19i20i21i22i23i24i26
+sequence=a=x0:-290,d50;d=17;pFt=Medium;pFmt=Hi4 M    i0i1i2i4i5i6i7i8i9i10i11i12i13i14i15i16i17i18i19i20i21i22i23i24i25i26i27i28i29i30i31i32i33i34
 useAnime=1
 )"";
 
@@ -280,7 +282,7 @@ void parse_sequence (const char *data)
 
 /**************************************************************************/
 
-void load_settings ()
+void load_settings (const String& filename)
 {
   /*
    * Load fall-back defaults
@@ -291,7 +293,7 @@ void load_settings ()
    * Read from flash
    */
   LittleFS.begin ();
-  auto file = LittleFS.open (F("arclock_settings"), "r");
+  auto file = LittleFS.open (filename, "r");
   auto bytes = file.size ();
   auto buffer = reinterpret_cast<char *> (malloc (bytes + 1));
   file.read (reinterpret_cast<uint8_t *> (buffer), bytes);
@@ -303,11 +305,14 @@ void load_settings ()
    */
   parse_settings (buffer);
   free (buffer);
+
+  Serial.print(F("Settings loaded from file: "));
+  Serial.println(filename);
 }
 
 /**************************************************************************/
 
-void save_settings ()
+void save_settings (const String& filename)
 {
   /*
    * Create settings string
@@ -324,15 +329,33 @@ void save_settings ()
   /*
    * Save changes to flash
    */
-  auto file = LittleFS.open (F("arclock_settings"), "w");
+  auto file = LittleFS.open (filename, "w");
   file.write (str.c_str (), str.length ());
   file.close ();
+
+  Serial.print(F("Settings stored to file: "));
+  Serial.println(filename);
+}
+
+const char default_file[] PROGMEM = R""(mqclock_settings)"";
+
+void load_settings() {
+  load_settings(default_file);
+}
+
+void save_settings() {
+  save_settings(default_file);
 }
 
 /**************************************************************************/
 
 void load_preset (const String &name)
 {
+  if(name == F("User1") || name == "User2") {
+    load_settings(name);
+    return;
+  }
+
   for (ssize_t i = 0; i != std::end (preset_names) - std::begin (preset_names); ++i)
   {
     if (name == preset_names[i])
