@@ -366,15 +366,22 @@ void load_preset (const String &name)
   }  
 }
 
-void load_preset (ssize_t i)
+void load_preset(ssize_t i)
 {
-  auto it = std::begin (preset_names);
-  std::advance(it, i);
-  if(it != std::end (preset_names)) {
-      parse_settings (String (FPSTR (presets[i])).c_str ());
-  } else { i = 0; }
-
+  auto it = std::begin(preset_names);
+  it += i;
+  if (it == std::end(preset_names))
+  {
+    i = 1;
+  }
   lastSelectedPreset = i;
+  
+  Serial.print("Preset: ");
+  Serial.print(lastSelectedPreset);
+  Serial.print(",  ");
+  Serial.println(preset_names[i]);
+
+  load_preset(preset_names[i]);
 }
 
 /**************************************************************************/

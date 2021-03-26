@@ -318,8 +318,8 @@ float lightTmp = 300;
 void loop ()
 {
   myButton.update();
-  if (myButton.isSingleClick()) {
-    Serial.println("CLICK");
+  if (myButton.isSingleClick())
+  {
     load_preset(lastSelectedPreset + 1);
   } else if (myButton.isDoubleClick()) {
     Serial.println("Double CLICK");
