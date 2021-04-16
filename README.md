@@ -11,6 +11,7 @@ Expended functionality of firmware.
 - Scrolling message  
 - Display sensors value from any MQTT broker (JSON not support for now)  
 - Autobrightness if connected sensor  
+- Independent patterns for ON/OFF states
 - Define any sequence to show in order  
 - Sequence animation  
 - Animated icons (nice tool to prepare new icons https://www.piskelapp.com/)  

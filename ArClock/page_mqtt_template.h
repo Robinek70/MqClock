@@ -33,24 +33,12 @@ const char page_mqtt_template[] PROGMEM = R""(<!DOCTYPE html>
     <form id="form_sens" class="pure-form pure-form-aligned">
       <fieldset>
           <legend>Sensor topics</legend>
-            <div class="pure-control-group">
-            <label for="q1">q1</label>
-            <input type="text" name="q1" value="{{q1}}" onChange="updateSingle(this)"> {{v1}}
-            <div class="pure-control-group">
-            <label for="q2">q2</label>
-            <input type="text" name="q2" value="{{q2}}" onChange="updateSingle(this)"> {{v2}}
-            <div class="pure-control-group">
-            <label for="q3">q3</label>
-            <input type="text" name="q3" value="{{q3}}" onChange="updateSingle(this)"> {{v3}}
-            <div class="pure-control-group">
-            <label for="q4">q4</label>
-            <input type="text" name="q4" value="{{q4}}" onChange="updateSingle(this)"> {{v4}}
-            <div class="pure-control-group">
-            <label for="q5">q5</label>
-            <input type="text" name="q5" value="{{q5}}" onChange="updateSingle(this)"> {{v5}}
-            <div class="pure-control-group">
-            <label for="q6">q6</label>
-            <input type="text" name="q6" value="{{q6}}" onChange="updateSingle(this)"> {{v6}}
+            <include src="/part?p=mqttrow&i=1">Loading...</include>
+            <include src="/part?p=mqttrow&i=2">Loading...</include>
+            <include src="/part?p=mqttrow&i=3">Loading...</include>
+            <include src="/part?p=mqttrow&i=4">Loading...</include>
+            <include src="/part?p=mqttrow&i=5">Loading...</include>
+            <include src="/part?p=mqttrow&i=6">Loading...</include>
           </div>
       </fieldset>
       <fieldset>
@@ -89,6 +77,14 @@ ex. d=5;pFmt=i2H!:M|a=X0:-32;pFmt=S i1">
 /**************************************************************************/
 ;
 
+const char page_mqtt_single_row_template[] PROGMEM = R""(
+  <div class="pure-control-group">
+    <label for="q{{i}}">q{{i}}</label>
+    <input type="text" name="q1" value="{{q{{i}}}}" onChange="updateSingle(this)"> 
+    for On:&nbsp;<input type="text" name="sOn{{i}}" value="{{sOn{{i}}}}" onChange="updateSingle(this)" style="width: 100px;"> 
+    for Off:&nbsp;<input type="text" name="sOff{{i}}" value="{{sOff{{i}}}}" onChange="updateSingle(this)" style="width: 100px;"> {{v{{i}}}}
+  </div>
+)"";
 
 
 const char page_template_icons[] PROGMEM = R""(

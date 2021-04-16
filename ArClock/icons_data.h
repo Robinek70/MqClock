@@ -21,6 +21,7 @@ struct defIcon {
 #include "icon-data-3.h"
 #include "icon-data-4.h"
 #include "icon-data-5.h"
+#include "icon-data-6.h"
 
 
 

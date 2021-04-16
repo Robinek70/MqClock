@@ -319,7 +319,8 @@ X = display defined 'Text'
 x - display Char ex. xW
 b - binary numeric value ex. bHbMbS
 v[1-6] - mqtt sensor
-V[1-6] as v1 with format ex. V2%4.1f
+V[1-6] - as v1 with format ex. V2%4.1f
+s[1-6] - pattern for On/Off
 T - internal DS sensor
 L - internal lighting sensor
 i[0-25] - display icon

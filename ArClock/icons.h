@@ -45,7 +45,10 @@ const defIcon icons[] = {
     iSnowData,
     iSunData,
     iBulbOffData,
-    iBulbOnData
+    iBulbOnData,
+    iHeaterOffData,
+    iHeaterOnData,
+    iChargeData
 };
 
 int frame = 0;

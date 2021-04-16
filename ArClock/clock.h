@@ -191,16 +191,16 @@ char const daysOfTheWeek[7][3] = {"Ni", "Pn", "Wt", "Sr", "Cz", "Pt", "So"};
 /*
  * Generate one of the clocks (using settings from prefix "item")
  */
-void clock (String item)
+void clockInner (String item, String ff, int& x, int& y )
 {
   /*
    * Position 
    */ 
-  int x = settings.at (item + "X").toInt ();
-  int y = settings.at (item + "Y").toInt ();
+  // int x = settings.at (item + "X").toInt ();
+  // int y = settings.at (item + "Y").toInt ();
   
-  binary_mode = false;
-  by = y;
+  // binary_mode = false;
+  // by = y;
 
   /*
    * Font 
@@ -233,7 +233,7 @@ void clock (String item)
   static uint32_t lastFlash = millis();
   char fmt02[7] = "%02.0f";
 
-  auto ff = settings.at (item + "Fmt");
+  //auto ff = settings.at (item + "Fmt");
   auto it = ff.begin();
 
   for(;it!=ff.end();++it)
@@ -459,6 +459,21 @@ void clock (String item)
           }
         }
         break;
+      case 's':
+        if(++it != ff.end()) {
+          auto ch = (*it);
+          auto p = const_cast<char*>(qValues[ch-'1'].c_str());
+          for ( ; *p; ++p) *p = tolower(*p);
+          String st = qValues[ch-'1'];
+
+          if((st == "on") || (st == "1")) {
+           st = settings.at ("sOn" + String(ch));
+          } else { 
+            st = settings.at ("sOff" + String(ch));
+          }
+
+          clockInner(item, st, x , y);
+        }
       case ' ':
         ++x;
         break;
@@ -466,6 +481,23 @@ void clock (String item)
 
     binary_mode = false;
   }
+}
+
+void clock(String item) {
+
+  /*
+   * Position 
+   */ 
+  int x = settings.at (item + "X").toInt ();
+  int y = settings.at (item + "Y").toInt ();
+
+  binary_mode = false;
+  by = y;
+
+  auto ff = settings.at (item + "Fmt");
+
+  clockInner(item, ff, x, y);
+
 }
 
 /**************************************************************************/

@@ -381,12 +381,19 @@ void handle_part ()
     result += FPSTR (page_template_message);
     Serial.println ("page_template_message");
   }
-   else if(part == "icons")
+  else if(part == "icons")
   {
     result += FPSTR (page_template_icons);
     Serial.println ("page_template_icons");
     
     result.replace (F("{{icons_list}}"), make_icons (icons));
+  }
+  else if(part == "mqttrow")
+  {
+    result += FPSTR (page_mqtt_single_row_template);
+    Serial.println ("page_mqtt_single_row_template");
+    
+    result.replace (F("{{i}}"), server.arg (F("i")));
   }
 
   replaceVariables(result);
