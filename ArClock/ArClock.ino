@@ -338,27 +338,76 @@ void loop ()
    */
   if (!message ())
   {
-     if((settings.at (F("useSequence")).toInt()) && millis() > nextSequenceTime) {
-       auto it = sequence.begin();
-       std::advance(it, current_seq);
-       Serial.print(*it);
-       Serial.print(',');
-       Serial.print(current_seq);
-       Serial.print(',');
-       Serial.println(sequence.size());
+     int8_t activeEvent = -1;
+     String eventFmt;
+     for(auto ii = 0; ii< 6; ii++) {
+         if(bValues[ii]) {
+            bValues[ii] = false;
+            eventFmt = settings.at ("sChange" + String(ii+1));
+            if(eventFmt.length() > 0) {  
+              if(eventFmt.c_str()[0]=='@') {
+                 std::list<String> items;
+                 split_items(items, eventFmt.c_str(), '@');
+                 for (const auto &item : items) {
+                    Serial.println(item);
+                    auto idx = item.indexOf('=');
+                    auto v = item.substring(0, idx);
+                    auto f = item.substring(idx+1, item.length());  
+                    Serial.print("V: ");
+                    Serial.print(v);
+                    Serial.print(", f: ");
+                    Serial.println(f);
+                    if(v == qValues[ii] && f.length() > 0) {
+                      activeEvent = ii;
+                      eventFmt = f;
+                      break;
+                    }
+                 }
+              } else {
+                activeEvent = ii;
+                break;
+              }
+            }
+         }
+     }
 
-       if(settings.at (F("aSeq")).length()>0) {
-          settings["a"] = settings.at (F("aSeq"));
-          currentAnimeHash = 0; // force apply new sequence for every step
+     if ((settings.at(F("useSequence")).toInt()) && (millis() > nextSequenceTime || activeEvent != -1))
+     {
+       if (settings.at(F("aSeq")).length() > 0)
+       {
+         settings["a"] = settings.at(F("aSeq"));
+         currentAnimeHash = 0; // force apply new sequence for every step
        }
 
-       parse_settings((*it).c_str(), ';');
+       if (activeEvent != -1)
+       {
+         Serial.print("activeEvent: ");
+         Serial.println(activeEvent);
+
+         parse_settings(eventFmt.c_str(), ';');
+       }
+
+       if (activeEvent == -1)
+       {
+         auto it = sequence.begin();
+         std::advance(it, current_seq);
+         /*Serial.print(*it);
+          Serial.print(',');
+          Serial.print(current_seq);
+          Serial.print(',');
+          Serial.println(sequence.size());*/
+         parse_settings((*it).c_str(), ';');
+
+         current_seq++;
+         if (current_seq >= sequence.size())
+         {
+           current_seq = 0;
+         }
+       }
+
        apply();
-       current_seq++;
-       if(current_seq >= sequence.size()) {
-          current_seq = 0;
-       }
-       nextSequenceTime = millis() + settings.at (F("d")).toFloat()*1000;
+
+       nextSequenceTime = millis() + settings.at(F("d")).toFloat() * 1000;
      }
 
     anime();

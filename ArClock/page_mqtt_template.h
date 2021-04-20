@@ -81,8 +81,9 @@ const char page_mqtt_single_row_template[] PROGMEM = R""(
   <div class="pure-control-group">
     <label for="q{{i}}">q{{i}}</label>
     <input type="text" name="q1" value="{{q{{i}}}}" onChange="updateSingle(this)"> 
-    for On:&nbsp;<input type="text" name="sOn{{i}}" value="{{sOn{{i}}}}" onChange="updateSingle(this)" style="width: 100px;"> 
-    for Off:&nbsp;<input type="text" name="sOff{{i}}" value="{{sOff{{i}}}}" onChange="updateSingle(this)" style="width: 100px;"> {{v{{i}}}}
+    for On: <input type="text" name="sOn{{i}}" value="{{sOn{{i}}}}" onChange="updateSingle(this)" style="width: 100px;"> 
+    for Off: <input type="text" name="sOff{{i}}" value="{{sOff{{i}}}}" onChange="updateSingle(this)" style="width: 100px;">
+    on Change: <input type="text" name="sChange{{i}}" value="{{sChange{{i}}}}" onChange="updateSingle(this)"> {{v{{i}}}}
   </div>
 )"";
 
@@ -90,7 +91,6 @@ const char page_mqtt_single_row_template[] PROGMEM = R""(
 const char page_template_icons[] PROGMEM = R""(
   <style>
     .icons img {
-      width: 32px;
       height: 32px;
       image-rendering: pixelated;
     }

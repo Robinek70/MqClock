@@ -183,7 +183,7 @@ int dayofweek(int d, int m, int y)
              y / 400 + t[m - 1] + d) % 7;  
 }
 
-char const daysOfTheWeek[7][3] = {"Ni", "Pn", "Wt", "Sr", "Cz", "Pt", "So"};
+char const daysOfTheWeek[7][3] = {"Ni", "Pn", "W", "Sr", "Cz", "Pt", "So"};
 
 
 /**************************************************************************/

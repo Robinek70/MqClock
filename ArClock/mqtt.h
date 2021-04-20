@@ -74,13 +74,13 @@ void callback(String topic, byte* message, unsigned int length) {
         if(key_value.first[0]=='q') {
           
           if(key_value.second == t) {
-            Serial.print('v');
-            Serial.print(key_value.first[1]);
-            Serial.print(": ");
-            Serial.println(messageTemp);
+            char idx = key_value.first[1]-'1';
+            if(qValues[idx] != messageTemp && qValues[idx] != "-")
+            {
+              bValues[idx] = true;
+            }
 
-            qValues[key_value.first[1]-'1']=messageTemp;
-
+            qValues[idx]=messageTemp;
             break;
           }
         }

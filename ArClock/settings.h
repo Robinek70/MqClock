@@ -19,6 +19,7 @@ Settings settings;
 Sequence sequence;
 
 String qValues[] = {"-", "-", "-", "-", "-", "-"};
+bool bValues[] = {false, false, false, false, false, false};
 ssize_t lastSelectedPreset = 0;
 
 /**************************************************************************/
@@ -78,6 +79,12 @@ sOn5=
 sOff5=
 sOn6=
 sOff6=
+sChange1=
+sChange2=
+sChange3=
+sChange4=
+sChange5=
+sChange6=
 sequence=a=y0:8;pFmt=H:M|a=x0:-30;pFmt=d-m
 a=
 aSeq=
@@ -277,19 +284,24 @@ void parse_settings (const char *data, char splitter = '\n')
   }  
 }
 
-void parse_sequence (const char *data)
+void split_items (std::list<String>& items, const char *data, char splitter)
 {
   std::string string (data);
   std::istringstream iss (string);
   while (!iss.eof ())
   {
     std::string key;
-    std::getline (iss, key, '|');
+    std::getline (iss, key, splitter);
     if (!key.empty ())
     {
-      sequence.push_back( key.c_str ());
+      items.push_back( key.c_str ());
     }
-  }  
+  }
+}
+
+void parse_sequence (const char *data)
+{
+  split_items (sequence, data, '|');
 }
 
 /**************************************************************************/
